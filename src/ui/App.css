@@ -4,3 +4,38 @@
   padding: 2rem;
   text-align: center;
 }
+
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: right;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  background-color: #181818;
+}
+
+header button {
+  all: unset;
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: 0.25rem;
+  -webkit-app-region: drag;
+}
+
+#close {
+  background-color: red;
+  -webkit-app-region: no-drag;
+}
+
+#minimize {
+  background-color: yellow;
+  -webkit-app-region: no-drag;
+}
+
+#maximize {
+  background-color: lime;
+  -webkit-app-region: no-drag;
+}

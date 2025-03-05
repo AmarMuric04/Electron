@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useStatistics } from "./useStatistics";
 import Chart from "./Chart";
 
 function App() {
+  const [activeView, setActiveView] = useState<View>("CPU");
   const statistics = useStatistics(10);
   const cpuUsages = useMemo(
     () => statistics.map((stat) => stat.cpuUsage),
@@ -18,12 +19,41 @@ function App() {
     [statistics]
   );
 
+  const activeUsages = useMemo(() => {
+    switch (activeView) {
+      case "CPU":
+        return cpuUsages;
+      case "RAM":
+        return ramUsages;
+      case "STORAGE":
+        return storageUsages;
+    }
+  }, [cpuUsages, ramUsages, storageUsages, activeView]);
+
+  useEffect(() => {
+    window.electron.subscribeChangeView((view) => setActiveView(view));
+  }, []);
+
   return (
     <div
       style={{
         width: "50vw",
       }}
     >
+      <header>
+        <button
+          id="close"
+          onClick={() => window.electron.sendFrameAction("CLOSE")}
+        />
+        <button
+          id="minimize"
+          onClick={() => window.electron.sendFrameAction("MINIMIZE")}
+        />
+        <button
+          id="maximize"
+          onClick={() => window.electron.sendFrameAction("MAXIMIZE")}
+        />
+      </header>
       <div
         style={{
           display: "flex",
@@ -32,14 +62,7 @@ function App() {
         }}
       >
         <div style={{ height: 120 }}>
-          CPU usage: <Chart data={cpuUsages} maxDataPoints={10} />
-        </div>
-        <div style={{ height: 120 }}>
-          RAM usage: <Chart data={ramUsages} maxDataPoints={10} />
-        </div>
-        <div style={{ height: 120 }}>
-          C disk usage:
-          <Chart data={storageUsages} maxDataPoints={10} />
+          <Chart data={activeUsages ? activeUsages : []} maxDataPoints={10} />
         </div>
       </div>
     </div>
