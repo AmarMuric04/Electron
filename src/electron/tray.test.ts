@@ -25,7 +25,7 @@ const mainWindow = {
 
 test("", () => {
   createTray(mainWindow);
-  const calls = (Menu.buildFromTemplate as any as Mock).mock.calls;
+  const calls = (Menu.buildFromTemplate as any).mock.calls;
   const args = calls[0] as Parameters<typeof Menu.buildFromTemplate>;
 
   const template = args[0];

@@ -5,6 +5,7 @@ import Chart from "./Chart";
 
 function App() {
   const [activeView, setActiveView] = useState<View>("CPU");
+  const staticData = useStaticData();
   const statistics = useStatistics(10);
   const cpuUsages = useMemo(
     () => statistics.map((stat) => stat.cpuUsage),
@@ -35,37 +36,98 @@ function App() {
   }, []);
 
   return (
-    <div
-      style={{
-        width: "50vw",
-      }}
-    >
-      <header>
-        <button
-          id="close"
-          onClick={() => window.electron.sendFrameAction("CLOSE")}
-        />
-        <button
-          id="minimize"
-          onClick={() => window.electron.sendFrameAction("MINIMIZE")}
-        />
-        <button
-          id="maximize"
-          onClick={() => window.electron.sendFrameAction("MAXIMIZE")}
-        />
-      </header>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "18px",
-        }}
-      >
-        <div style={{ height: 120 }}>
-          <Chart data={activeUsages ? activeUsages : []} maxDataPoints={10} />
+    <div>
+      <Header />
+      <div className="main">
+        <div>
+          <SelectOption
+            title="CPU"
+            subTitle={staticData?.cpuModel ?? ""}
+            data={cpuUsages}
+            onClick={() => setActiveView("CPU")}
+            view="CPU"
+          />
+          <SelectOption
+            title="RAM"
+            subTitle={(staticData?.totalMemoryGB.toString() ?? "") + "GB"}
+            data={ramUsages}
+            onClick={() => setActiveView("RAM")}
+            view="RAM"
+          />
+          <SelectOption
+            title="STORAGE"
+            subTitle={(staticData?.totalStorage.toString() ?? "") + " GB"}
+            data={storageUsages}
+            onClick={() => setActiveView("STORAGE")}
+            view="STORAGE"
+          />
+        </div>
+        <div className="mainGrid">
+          <Chart
+            data={activeUsages ? activeUsages : []}
+            maxDataPoints={10}
+            selectedView={activeView}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+function SelectOption({
+  title,
+  view,
+  subTitle,
+  data,
+  onClick,
+}: {
+  title: string;
+  view: View;
+  subTitle: string;
+  data: number[];
+  onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick} className="selectOption">
+      <div className="selectOptionTitle">
+        <div>{title}</div>
+        <div>{subTitle}</div>
+      </div>
+      <div className="selectOptionChart">
+        <Chart data={data ? data : []} maxDataPoints={5} selectedView={view} />
+      </div>
+    </button>
+  );
+}
+
+function useStaticData() {
+  const [staticData, setStaticData] = useState<StaticData | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setStaticData(await window.electron.getStaticData());
+    })();
+  }, []);
+
+  return staticData;
+}
+
+function Header() {
+  return (
+    <header>
+      <button
+        id="close"
+        onClick={() => window.electron.sendFrameAction("CLOSE")}
+      />
+      <button
+        id="minimize"
+        onClick={() => window.electron.sendFrameAction("MINIMIZE")}
+      />
+      <button
+        id="maximize"
+        onClick={() => window.electron.sendFrameAction("MAXIMIZE")}
+      />
+    </header>
   );
 }
 
